@@ -1,0 +1,15 @@
+[project]
+name = "agent-core"
+version = "0.1.0"
+description = "CrewAI agent orchestration engine for AI Monitor"
+requires-python = ">=3.11"
+dependencies = [
+    "crewai>=0.80.0",
+    "langchain-openai>=0.3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+]

@@ -1,0 +1,12 @@
+{
+  "name": "@ai-monitor/api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "uvicorn src.main:app --reload --port 8000",
+    "build": "echo 'Python API - no build step'",
+    "lint": "echo 'Python API - use ruff'",
+    "type-check": "echo 'Python API - use mypy'",
+    "test": "pytest tests/"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "@ai-monitor/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI Monitor desktop client (Electron)",
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "echo 'Desktop app - not yet implemented'",
+    "build": "echo 'Desktop app - not yet implemented'"
+  }
+}
