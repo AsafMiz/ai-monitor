@@ -7,6 +7,8 @@ This module will contain the core logic for:
 - Handling conversation routing
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 

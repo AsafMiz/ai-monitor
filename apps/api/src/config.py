@@ -1,5 +1,8 @@
 """Application configuration from environment variables."""
 
+from __future__ import annotations
+
+from typing import List
 import os
 from dotenv import load_dotenv
 
@@ -12,7 +15,7 @@ class Settings:
     SUPABASE_JWT_SECRET: str = os.getenv("SUPABASE_JWT_SECRET", "")
     STRIPE_SECRET_KEY: str = os.getenv("STRIPE_SECRET_KEY", "")
     STRIPE_WEBHOOK_SECRET: str = os.getenv("STRIPE_WEBHOOK_SECRET", "")
-    CORS_ORIGINS: list[str] = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+    CORS_ORIGINS: List[str] = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
 
 

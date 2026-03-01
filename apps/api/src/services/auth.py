@@ -1,5 +1,7 @@
 """JWT authentication service for Supabase tokens."""
 
+from __future__ import annotations
+
 import jwt
 from src.config import settings
 

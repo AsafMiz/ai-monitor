@@ -1,5 +1,7 @@
 """Stripe billing service."""
 
+from __future__ import annotations
+
 import stripe
 from src.config import settings
 
