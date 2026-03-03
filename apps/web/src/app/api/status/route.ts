@@ -157,9 +157,17 @@ export async function GET() {
       ? 'degraded'
       : 'partial';
 
+  const supabaseUrl = normalizeUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const apiUrl = normalizeUrl(process.env.API_URL || process.env.NEXT_PUBLIC_API_URL);
+
   return NextResponse.json({
     status: overall,
     timestamp: new Date().toISOString(),
     services: checks,
+    debug: {
+      supabase_url: supabaseUrl ? `${supabaseUrl.substring(0, 30)}...` : 'NOT SET',
+      api_url: apiUrl || 'NOT SET',
+      has_anon_key: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    },
   });
 }
