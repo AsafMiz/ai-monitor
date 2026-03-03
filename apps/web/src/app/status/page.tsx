@@ -32,7 +32,7 @@ function ServiceIcon({ icon, status }: { icon: string; status: string }) {
   const color = status === 'ok' ? 'text-emerald-400' : status === 'error' ? 'text-red-400' : 'text-amber-400';
   const bg = status === 'ok' ? 'bg-emerald-500/10' : status === 'error' ? 'bg-red-500/10' : 'bg-amber-500/10';
 
-  const icons: Record<string, JSX.Element> = {
+  const icons: Record<string, React.ReactNode> = {
     database: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M20 7c0 1.657-3.582 3-8 3S4 8.657 4 7m16 0c0-1.657-3.582-3-8-3S4 5.343 4 7m16 0v10c0 1.657-3.582 3-8 3s-8-1.343-8-3V7m16 5c0 1.657-3.582 3-8 3s-8-1.343-8-3" />
