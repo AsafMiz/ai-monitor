@@ -4,11 +4,19 @@ function normalizeUrl(url: string): string {
   return `https://${cleaned}`;
 }
 
-const API_URL = normalizeUrl(
-  process.env.API_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  'http://localhost:8000'
-);
+const IS_LOCAL = process.env.LOCAL_DEV === 'true' || process.env.NEXT_PUBLIC_LOCAL_DEV === 'true';
+
+function getApiUrl(): string {
+  const raw = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
+  if (raw) return normalizeUrl(raw);
+  if (IS_LOCAL) return 'http://localhost:8000';
+  throw new Error(
+    'API_URL is not set. Set API_URL in your environment variables. ' +
+    'For local development, set LOCAL_DEV=true.'
+  );
+}
+
+const API_URL = getApiUrl();
 
 export async function apiFetch<T = unknown>(
   path: string,
