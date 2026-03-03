@@ -2,9 +2,11 @@ import { NextResponse } from 'next/server';
 
 function normalizeUrl(url: string | undefined): string | undefined {
   if (!url) return undefined;
-  const trimmed = url.trim().replace(/\/+$/, '');
-  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
-  return `https://${trimmed}`;
+  // Strip invisible chars (BOM, zero-width spaces, NBSP) that sneak in from copy-paste
+  const cleaned = url.replace(/^[\s\u200B\u200C\u200D\uFEFF\u00A0]+/, '').replace(/[\s\u200B\u200C\u200D\uFEFF\u00A0]+$/, '').replace(/\/+$/, '');
+  if (!cleaned) return undefined;
+  if (/^https?:\/\//i.test(cleaned)) return cleaned;
+  return `https://${cleaned}`;
 }
 
 interface ServiceCheck {

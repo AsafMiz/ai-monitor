@@ -11,10 +11,14 @@ load_dotenv()
 
 def _normalize_url(url: str) -> str:
     """Ensure a URL has a scheme prefix (defaults to https://)."""
-    url = url.strip().rstrip("/")
+    import re
+    # Strip invisible chars (BOM, zero-width spaces, NBSP) from copy-paste
+    url = re.sub(r'^[\s\u200b\u200c\u200d\ufeff\u00a0]+', '', url)
+    url = re.sub(r'[\s\u200b\u200c\u200d\ufeff\u00a0]+$', '', url)
+    url = url.rstrip("/")
     if not url:
         return url
-    if url.startswith("http://") or url.startswith("https://"):
+    if re.match(r'^https?://', url, re.IGNORECASE):
         return url
     return f"https://{url}"
 

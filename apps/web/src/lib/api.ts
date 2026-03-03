@@ -1,7 +1,7 @@
 function normalizeUrl(url: string): string {
-  const trimmed = url.trim().replace(/\/+$/, '');
-  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
-  return `https://${trimmed}`;
+  const cleaned = url.replace(/^[\s\u200B\u200C\u200D\uFEFF\u00A0]+/, '').replace(/[\s\u200B\u200C\u200D\uFEFF\u00A0]+$/, '').replace(/\/+$/, '');
+  if (/^https?:\/\//i.test(cleaned)) return cleaned;
+  return `https://${cleaned}`;
 }
 
 const API_URL = normalizeUrl(
