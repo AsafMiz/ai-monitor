@@ -17,6 +17,17 @@ interface ServiceCheck {
   icon: string;
 }
 
+interface RailwayHealth {
+  status: string;
+  version?: string;
+  config?: {
+    supabase?: boolean;
+    stripe?: boolean;
+    openai?: boolean;
+    cors_origins?: string[];
+  };
+}
+
 async function checkSupabase(): Promise<ServiceCheck> {
   const base = { name: 'Supabase Database', icon: 'database', description: 'PostgreSQL database with pgvector, Row Level Security, and real-time subscriptions.' };
   const url = normalizeUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
@@ -63,12 +74,12 @@ async function checkSupabaseAuth(): Promise<ServiceCheck> {
   }
 }
 
-async function checkRailwayApi(): Promise<ServiceCheck> {
+async function checkRailwayApi(): Promise<{ check: ServiceCheck; health: RailwayHealth | null }> {
   const base = { name: 'FastAPI Backend', icon: 'server', description: 'Python API server handling agent CRUD, workspace management, and Stripe billing logic.' };
   const url = normalizeUrl(process.env.API_URL || process.env.NEXT_PUBLIC_API_URL);
 
   if (!url) {
-    return { ...base, status: 'unconfigured', message: 'API_URL not set', hint: 'Deploy the API to Railway, then set API_URL in Vercel to your Railway public URL.' };
+    return { check: { ...base, status: 'unconfigured', message: 'API_URL not set', hint: 'Deploy the API to Railway, then set API_URL in Vercel to your Railway public URL.' }, health: null };
   }
 
   const start = Date.now();
@@ -78,12 +89,12 @@ async function checkRailwayApi(): Promise<ServiceCheck> {
     });
     const latency = Date.now() - start;
     if (res.ok) {
-      const data = await res.json();
-      return { ...base, status: 'ok', latency, message: `v${data.version || '0.1.0'}` };
+      const data: RailwayHealth = await res.json();
+      return { check: { ...base, status: 'ok', latency, message: `v${data.version || '0.1.0'}` }, health: data };
     }
-    return { ...base, status: 'error', latency, message: `Health check returned HTTP ${res.status}`, hint: 'The API is deployed but returning errors. Check Railway logs for details.' };
+    return { check: { ...base, status: 'error', latency, message: `Health check returned HTTP ${res.status}`, hint: 'The API is deployed but returning errors. Check Railway logs for details.' }, health: null };
   } catch (e) {
-    return { ...base, status: 'error', latency: Date.now() - start, message: (e as Error).message, hint: 'Cannot reach the API. Verify the Railway deployment is running and the URL is correct.' };
+    return { check: { ...base, status: 'error', latency: Date.now() - start, message: (e as Error).message, hint: 'Cannot reach the API. Verify the Railway deployment is running and the URL is correct.' }, health: null };
   }
 }
 
@@ -112,25 +123,33 @@ function checkStripe(): ServiceCheck {
   return { ...base, status: 'ok', message: `${mode} mode` };
 }
 
-function checkOpenAI(): ServiceCheck {
+function checkOpenAI(railwayHealth: RailwayHealth | null): ServiceCheck {
   const base = { name: 'OpenAI', icon: 'brain', description: 'GPT-4o-mini language model powering agent reasoning, conversation, and task execution.' };
-  const key = process.env.OPENAI_API_KEY;
-  if (!key) {
-    return { ...base, status: 'unconfigured', message: 'API key not set', hint: 'Set OPENAI_API_KEY on Railway. Get a key at platform.openai.com > API keys.' };
+
+  if (!railwayHealth) {
+    return { ...base, status: 'unconfigured', message: 'Cannot verify — API is not reachable', hint: 'The OpenAI key is configured on Railway. Fix the FastAPI Backend connection first.' };
   }
-  return { ...base, status: 'ok', message: 'Key configured' };
+
+  if (railwayHealth.config?.openai) {
+    return { ...base, status: 'ok', message: 'Key configured on Railway' };
+  }
+
+  return { ...base, status: 'unconfigured', message: 'API key not set on Railway', hint: 'Set OPENAI_API_KEY in Railway environment variables. Get a key at platform.openai.com > API keys.' };
 }
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const checks = await Promise.all([
+  const [supabase, supabaseAuth, railway, stripe] = await Promise.all([
     checkSupabase(),
     checkSupabaseAuth(),
     checkRailwayApi(),
     Promise.resolve(checkStripe()),
-    Promise.resolve(checkOpenAI()),
   ]);
+
+  const openai = checkOpenAI(railway.health);
+
+  const checks = [supabase, supabaseAuth, railway.check, stripe, openai];
 
   const overall = checks.every((c) => c.status === 'ok')
     ? 'healthy'
