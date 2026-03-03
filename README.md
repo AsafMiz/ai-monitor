@@ -53,7 +53,7 @@ pnpm install
 ### 2. Configure environment variables
 
 ```bash
-cp .env.example .env.local
+cp .env.template .env.local
 ```
 
 Fill in your credentials in `.env.local`:

@@ -1,0 +1,31 @@
+# Env files — never include in Docker
+.env
+.env.*
+.env.template
+
+# Node / pnpm
+node_modules/
+apps/web/
+apps/desktop/
+packages/
+
+# Git
+.git/
+.github/
+
+# IDE
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Misc
+.claude/
+*.md
+turbo.json
+pnpm-workspace.yaml
+pnpm-lock.yaml
