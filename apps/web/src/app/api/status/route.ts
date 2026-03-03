@@ -5,14 +5,18 @@ interface ServiceCheck {
   status: 'ok' | 'error' | 'unconfigured';
   latency?: number;
   message?: string;
+  description: string;
+  hint?: string;
+  icon: string;
 }
 
 async function checkSupabase(): Promise<ServiceCheck> {
+  const base = { name: 'Supabase Database', icon: 'database', description: 'PostgreSQL database with pgvector, Row Level Security, and real-time subscriptions.' };
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key) {
-    return { name: 'Supabase', status: 'unconfigured', message: 'NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY not set' };
+    return { ...base, status: 'unconfigured', message: 'Environment variables not set', hint: 'Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in Vercel.' };
   }
 
   const start = Date.now();
@@ -22,21 +26,20 @@ async function checkSupabase(): Promise<ServiceCheck> {
       signal: AbortSignal.timeout(5000),
     });
     const latency = Date.now() - start;
-    if (res.ok) {
-      return { name: 'Supabase', status: 'ok', latency };
-    }
-    return { name: 'Supabase', status: 'error', latency, message: `HTTP ${res.status}` };
+    if (res.ok) return { ...base, status: 'ok', latency };
+    return { ...base, status: 'error', latency, message: `Responded with HTTP ${res.status}`, hint: 'Check that NEXT_PUBLIC_SUPABASE_ANON_KEY is correct and the project is not paused.' };
   } catch (e) {
-    return { name: 'Supabase', status: 'error', latency: Date.now() - start, message: (e as Error).message };
+    return { ...base, status: 'error', latency: Date.now() - start, message: (e as Error).message, hint: 'The Supabase project may be paused or the URL is incorrect.' };
   }
 }
 
 async function checkSupabaseAuth(): Promise<ServiceCheck> {
+  const base = { name: 'Supabase Auth', icon: 'shield', description: 'User authentication with email/password, OAuth providers, and JWT token management.' };
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key) {
-    return { name: 'Supabase Auth', status: 'unconfigured', message: 'NEXT_PUBLIC_SUPABASE_URL not set' };
+    return { ...base, status: 'unconfigured', message: 'Environment variables not set', hint: 'Requires NEXT_PUBLIC_SUPABASE_URL to be configured.' };
   }
 
   const start = Date.now();
@@ -46,20 +49,19 @@ async function checkSupabaseAuth(): Promise<ServiceCheck> {
       signal: AbortSignal.timeout(5000),
     });
     const latency = Date.now() - start;
-    if (res.ok) {
-      return { name: 'Supabase Auth', status: 'ok', latency };
-    }
-    return { name: 'Supabase Auth', status: 'error', latency, message: `HTTP ${res.status}` };
+    if (res.ok) return { ...base, status: 'ok', latency };
+    return { ...base, status: 'error', latency, message: `Auth service returned HTTP ${res.status}`, hint: 'Verify the Supabase project has Auth enabled and the anon key is valid.' };
   } catch (e) {
-    return { name: 'Supabase Auth', status: 'error', latency: Date.now() - start, message: (e as Error).message };
+    return { ...base, status: 'error', latency: Date.now() - start, message: (e as Error).message, hint: 'Auth endpoint is unreachable. Check the Supabase project status.' };
   }
 }
 
 async function checkRailwayApi(): Promise<ServiceCheck> {
+  const base = { name: 'FastAPI Backend', icon: 'server', description: 'Python API server handling agent CRUD, workspace management, and Stripe billing logic.' };
   const url = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
 
   if (!url) {
-    return { name: 'FastAPI (Railway)', status: 'unconfigured', message: 'API_URL not set' };
+    return { ...base, status: 'unconfigured', message: 'API_URL not set', hint: 'Deploy the API to Railway, then set API_URL in Vercel to your Railway public URL.' };
   }
 
   const start = Date.now();
@@ -70,22 +72,23 @@ async function checkRailwayApi(): Promise<ServiceCheck> {
     const latency = Date.now() - start;
     if (res.ok) {
       const data = await res.json();
-      return { name: 'FastAPI (Railway)', status: 'ok', latency, message: `v${data.version || '?'}` };
+      return { ...base, status: 'ok', latency, message: `v${data.version || '0.1.0'}` };
     }
-    return { name: 'FastAPI (Railway)', status: 'error', latency, message: `HTTP ${res.status}` };
+    return { ...base, status: 'error', latency, message: `Health check returned HTTP ${res.status}`, hint: 'The API is deployed but returning errors. Check Railway logs for details.' };
   } catch (e) {
-    return { name: 'FastAPI (Railway)', status: 'error', latency: Date.now() - start, message: (e as Error).message };
+    return { ...base, status: 'error', latency: Date.now() - start, message: (e as Error).message, hint: 'Cannot reach the API. Verify the Railway deployment is running and the URL is correct.' };
   }
 }
 
 function checkStripe(): ServiceCheck {
+  const base = { name: 'Stripe Billing', icon: 'credit-card', description: 'Subscription management with $100/mo Pro plan, webhook event processing, and customer portal.' };
   const secret = process.env.STRIPE_SECRET_KEY;
   const webhook = process.env.STRIPE_WEBHOOK_SECRET;
   const publishable = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
   const priceId = process.env.STRIPE_PRICE_ID;
 
   if (!secret && !publishable) {
-    return { name: 'Stripe', status: 'unconfigured', message: 'STRIPE_SECRET_KEY and NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY not set' };
+    return { ...base, status: 'unconfigured', message: 'Stripe keys not configured', hint: 'Go to Stripe Dashboard > Developers > API keys and copy your keys into Vercel env vars.' };
   }
 
   const missing: string[] = [];
@@ -95,19 +98,23 @@ function checkStripe(): ServiceCheck {
   if (!priceId) missing.push('STRIPE_PRICE_ID');
 
   if (missing.length > 0) {
-    return { name: 'Stripe', status: 'error', message: `Missing: ${missing.join(', ')}` };
+    return { ...base, status: 'error', message: `Missing ${missing.length} key${missing.length > 1 ? 's' : ''}: ${missing.join(', ')}`, hint: 'Add the missing keys in Vercel > Project > Settings > Environment Variables.' };
   }
 
-  return { name: 'Stripe', status: 'ok', message: secret?.startsWith('sk_live_') ? 'Live mode' : 'Test mode' };
+  const mode = secret?.startsWith('sk_live_') ? 'Live' : 'Sandbox';
+  return { ...base, status: 'ok', message: `${mode} mode` };
 }
 
 function checkOpenAI(): ServiceCheck {
+  const base = { name: 'OpenAI', icon: 'brain', description: 'GPT-4o-mini language model powering agent reasoning, conversation, and task execution.' };
   const key = process.env.OPENAI_API_KEY;
   if (!key) {
-    return { name: 'OpenAI', status: 'unconfigured', message: 'OPENAI_API_KEY not set (checked on Railway)' };
+    return { ...base, status: 'unconfigured', message: 'API key not set', hint: 'Set OPENAI_API_KEY on Railway. Get a key at platform.openai.com > API keys.' };
   }
-  return { name: 'OpenAI', status: 'ok' };
+  return { ...base, status: 'ok', message: 'Key configured' };
 }
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const checks = await Promise.all([
