@@ -1,6 +1,6 @@
 {
   "buildCommand": "pnpm turbo build --filter=@ai-monitor/web",
-  "outputDirectory": "apps/web/.next",
+  "outputDirectory": ".next",
   "installCommand": "pnpm install",
   "framework": "nextjs"
 }
