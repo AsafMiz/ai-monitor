@@ -1,5 +1,12 @@
 import { NextResponse } from 'next/server';
 
+function normalizeUrl(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  const trimmed = url.trim().replace(/\/+$/, '');
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  return `https://${trimmed}`;
+}
+
 interface ServiceCheck {
   name: string;
   status: 'ok' | 'error' | 'unconfigured';
@@ -12,7 +19,7 @@ interface ServiceCheck {
 
 async function checkSupabase(): Promise<ServiceCheck> {
   const base = { name: 'Supabase Database', icon: 'database', description: 'PostgreSQL database with pgvector, Row Level Security, and real-time subscriptions.' };
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const url = normalizeUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key) {
@@ -35,7 +42,7 @@ async function checkSupabase(): Promise<ServiceCheck> {
 
 async function checkSupabaseAuth(): Promise<ServiceCheck> {
   const base = { name: 'Supabase Auth', icon: 'shield', description: 'User authentication with email/password, OAuth providers, and JWT token management.' };
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const url = normalizeUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key) {
@@ -58,7 +65,7 @@ async function checkSupabaseAuth(): Promise<ServiceCheck> {
 
 async function checkRailwayApi(): Promise<ServiceCheck> {
   const base = { name: 'FastAPI Backend', icon: 'server', description: 'Python API server handling agent CRUD, workspace management, and Stripe billing logic.' };
-  const url = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
+  const url = normalizeUrl(process.env.API_URL || process.env.NEXT_PUBLIC_API_URL);
 
   if (!url) {
     return { ...base, status: 'unconfigured', message: 'API_URL not set', hint: 'Deploy the API to Railway, then set API_URL in Vercel to your Railway public URL.' };
