@@ -1,7 +1,7 @@
 # Env files — never include in Docker
 .env
 .env.*
-.env.template
+env.template
 
 # Node / pnpm
 node_modules/

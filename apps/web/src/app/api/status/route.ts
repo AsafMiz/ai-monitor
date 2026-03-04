@@ -159,20 +159,9 @@ export async function GET() {
       ? 'degraded'
       : 'partial';
 
-  // Temporary debug — remove after fixing
-  const rawSupabase = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-  const rawApi = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || '';
-
   return NextResponse.json({
     status: overall,
     timestamp: new Date().toISOString(),
     services: checks,
-    debug: {
-      supabase_raw_length: rawSupabase.length,
-      supabase_first10_codes: [...rawSupabase.slice(0, 10)].map(c => c.charCodeAt(0)),
-      supabase_normalized: normalizeUrl(rawSupabase)?.substring(0, 40),
-      api_raw: rawApi.substring(0, 60),
-      api_normalized: normalizeUrl(rawApi)?.substring(0, 60),
-    },
   });
 }

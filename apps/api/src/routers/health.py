@@ -16,6 +16,5 @@ async def health_check():
             "supabase": bool(settings.SUPABASE_URL),
             "stripe": bool(settings.STRIPE_SECRET_KEY),
             "openai": bool(settings.OPENAI_API_KEY),
-            "cors_origins": settings.CORS_ORIGINS,
         },
     }
