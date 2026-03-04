@@ -1,29 +1,19 @@
 # ===================================================================
 # Dockerfile — AI Monitor Python API
-# Multi-stage build: install deps in builder, copy to slim runtime.
+# Single-stage build for maximum reliability on Railway.
 # ===================================================================
 
-# --- Stage 1: Builder -------------------------------------------
-FROM python:3.12-slim AS builder
-
-WORKDIR /build
-
-COPY apps/api/requirements.txt .
-RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
-
-# --- Stage 2: Runtime -------------------------------------------
 FROM python:3.12-slim
 
-# Prevent .pyc files and ensure logs appear immediately in Railway
+# Logs appear immediately in Railway (no buffering)
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Copy installed packages from builder
-COPY --from=builder /install /usr/local
+COPY apps/api/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application source
 COPY apps/api/src/ ./src/
 
 # Railway injects PORT at runtime; default to 8000 for local docker
