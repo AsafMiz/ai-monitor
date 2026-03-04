@@ -1,0 +1,12 @@
+# Tell Railway to ignore Node.js/pnpm workspace files
+# so it does not try to detect a Node.js project.
+node_modules/
+package.json
+apps/api/package.json
+apps/web/
+apps/desktop/
+packages/
+pnpm-lock.yaml
+pnpm-workspace.yaml
+turbo.json
+.turbo/

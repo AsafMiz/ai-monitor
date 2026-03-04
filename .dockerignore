@@ -1,31 +1,13 @@
-# Env files — never include in Docker
-.env
-.env.*
-env.template
+# ===================================================================
+# .dockerignore — AI Monitor API (Python)
+# Only apps/api/requirements.txt and apps/api/src/ enter the build.
+# Everything else is excluded via whitelist approach.
+# ===================================================================
 
-# Node / pnpm
-node_modules/
-apps/web/
-apps/desktop/
-packages/
+# Exclude everything
+*
 
-# Git
-.git/
-.github/
-
-# IDE
-.vscode/
-.idea/
-
-# Python
-__pycache__/
-*.pyc
-.venv/
-.pytest_cache/
-
-# Misc
-.claude/
-*.md
-turbo.json
-pnpm-workspace.yaml
-pnpm-lock.yaml
+# Whitelist only what the Dockerfile needs
+!apps/api/requirements.txt
+!apps/api/src/
+!apps/api/src/**
